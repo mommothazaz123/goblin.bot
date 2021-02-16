@@ -30,8 +30,8 @@ class GoblinState:
     def connect(self, data):
         info = data['Info']
         self.arena = info['Arena']
-        self.red = Actor(**info['Red'])
-        self.blue = Actor(**info['Blue'])
+        self.red = Actor.from_data(info['Red'])
+        self.blue = Actor.from_data(info['Blue'])
         self.dist = info['Dist']
 
     def sync(self, data):

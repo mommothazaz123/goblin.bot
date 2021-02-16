@@ -47,7 +47,7 @@ class GoblinClient:
         connect = await self.ws.receive_json()  # CONNECT packet
         await self.handle_event(connect)
 
-        await self.ws.receive_str()  # random debug packet?
+        log.info(await self.ws.receive_str())  # random debug packet?
 
         # main game loop
         while True:
