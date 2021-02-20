@@ -1,6 +1,8 @@
 import asyncio
 import collections
 import logging
+import os
+import pathlib
 import traceback
 import typing
 
@@ -16,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class GoblinClient:
-    def __init__(self, http_base="http://goblin.bet:5000", ws_base="ws://goblin.bet:5000"):
+    def __init__(self, http_base="http://goblin.bet", ws_base="ws://goblin.bet:5000"):
         self.http_base: str = http_base
         self.ws_base: str = ws_base
 
@@ -99,6 +101,30 @@ class GoblinClient:
     async def handle_round_complete(self, data):
         log.debug("END ")
         await self.dispatch('round_complete', RoundComplete(self.state, **data))
+
+    # http
+    async def download_image(self, path, dest='cache/img'):
+        """
+        Downloads the image at the path on the server to the destination and caches it.
+        Returns the path to the downloaded/cached image, or None if the image does not exist.
+        """
+        src_path = pathlib.PurePath(path)
+        src_filename = src_path.name
+        dest_path = pathlib.Path(dest, src_filename)
+        if os.path.isfile(dest_path):
+            return dest_path
+        async with self.http.get(f"{self.http_base}/{path}") as resp:
+            if resp.status == 200:
+                with open(dest_path, 'wb') as fd:
+                    while True:
+                        chunk = await resp.content.read(64)
+                        if not chunk:
+                            break
+                        fd.write(chunk)
+                return dest_path
+            elif resp.status == 404:
+                return None
+            resp.raise_for_status()
 
     # listeners
     async def dispatch(self, event_type: str, *args, **kwargs):
