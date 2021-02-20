@@ -75,7 +75,7 @@ class GoblinClient:
             # noinspection PyArgumentList
             await handler(data)
         elif data['Type']:
-            log.info(f"No handler for event type {data['Type']!r}")
+            log.debug(f"No handler for event type {data['Type']!r}")
 
     async def handle_connect(self, data):
         log.debug("CONN")
@@ -107,6 +107,7 @@ class GoblinClient:
                 await listener(*args, **kwargs)
             except Exception as e:
                 log.warning(f"Unhandled error in dispatch: {e}")
+                traceback.print_exc()
 
     def register_listener(self, event_type: typing.Optional[str], coro: typing.Coroutine):
         """

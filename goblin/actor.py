@@ -1,14 +1,26 @@
 from dataclasses import dataclass
 
 
-class Actor:
+class BaseActor:
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def image_path(self):
+        return f"/Art/{self.name.replace(' ', '')}.png"
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} name={self.name!r}>"
+
+
+class Actor(BaseActor):
     def __init__(self, name: str, cr: int, max_hp: int, ac: int, stats, tags, size: int, movement, skills, saves,
                  senses, languages, actions, immune, resist, vulnerable, conditions, c_info, vis, events, e_info,
                  concentration, act_econ, face, target, id, t_stats=None, init=None):
         if t_stats is None:
             t_stats = []
 
-        self.name = name
+        super().__init__(name)
         self.cr: int = cr
         self.max_hp = max_hp
         self.ac = ac
@@ -49,10 +61,6 @@ class Actor:
             act_econ=data['ActEcon'], face=face, t_stats=data.get('TStats', []), target=data['Target'], id=data['ID'],
             init=data.get('Init')
         )
-
-    @property
-    def image_path(self):
-        return f"/Art/{self.name.replace(' ', '')}.png"
 
 
 @dataclass
