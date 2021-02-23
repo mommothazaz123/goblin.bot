@@ -20,16 +20,6 @@ async def on_ready():
     log.info(f'Logged in as {bot.user.name} ({bot.user.id})')
 
 
-@bot.goblin.listener()
-async def temp(data):
-    if (not data.get('Text')) or data.get('Type') == 'Chat':
-        return
-    text = data['Text']
-    await bot.get_channel(810638145636139049).send(text)
-
-@bot.goblin.listener('round_complete')
-async def round_complete(result):
-    log.info(f"Round complete ({result.red.name} v. {result.blue.name}): victor is {result.victor.name}")
-
 if __name__ == '__main__':
+    bot.load_extension("cogs.tracker")
     bot.run(config.TOKEN)

@@ -31,6 +31,10 @@ class Bracket:
             raise ValueError("Root matchup not found")
         return Matchup.from_actor(root_actor)
 
+    def reset(self):
+        """Resets the bracket to a new state."""
+        self.matchups = []
+
     def root(self):
         """Creates a Matchup representing a possible full bracket."""
         matchups = self.matchups.copy()
@@ -53,11 +57,11 @@ class Matchup:
         self.victor = victor
 
     @classmethod
-    def from_actor(cls, actor: Actor):
+    def from_actor(cls, actor: Actor, fill_from_tstats=True):
         """Generate a Matchup tree given an actor and its ``tstats``."""
 
         def recurse(tstats):
-            if not tstats:
+            if not (tstats and fill_from_tstats):
                 return cls(red=None, blue=None, victor=actor)
             defeated = Matchup(red=None, blue=None, victor=BaseActor(name=tstats[-1]))
             return cls(red=recurse(tstats[:-1]), blue=defeated, victor=actor)

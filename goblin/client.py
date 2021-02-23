@@ -1,7 +1,6 @@
 import asyncio
 import collections
 import logging
-import os
 import pathlib
 import traceback
 import typing
@@ -13,8 +12,7 @@ from .state import GoblinState
 
 log = logging.getLogger(__name__)
 
-
-# log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG)
 
 
 class GoblinClient:
@@ -35,6 +33,7 @@ class GoblinClient:
             'NewBattle': self.handle_new_battle,
             'StartRound': self.handle_start_round,
             'RoundComplete': self.handle_round_complete,
+            '': self.handle_system_text,
         }
 
     # lifecycle methods: connect -> start -> close
@@ -92,7 +91,7 @@ class GoblinClient:
         self.state.set(data)
 
     async def handle_new_battle(self, data):
-        pass
+        await self.dispatch('new_battle', data)  # usually never use this event, listen for start_round instead
 
     async def handle_start_round(self, data):
         log.debug("STRT")
@@ -102,26 +101,36 @@ class GoblinClient:
         log.debug("END ")
         await self.dispatch('round_complete', RoundComplete(self.state, **data))
 
+    async def handle_system_text(self, data):
+        await self.dispatch('system_text', data['Text'])
+
     # http
     async def download_image(self, path, dest='cache/img'):
         """
         Downloads the image at the path on the server to the destination and caches it.
         Returns the path to the downloaded/cached image, or None if the image does not exist.
         """
+        log.debug(f"Downloading {self.http_base}/{path}...")
         src_path = pathlib.PurePath(path)
         src_filename = src_path.name
         dest_path = pathlib.Path(dest, src_filename)
-        if os.path.isfile(dest_path):
-            return dest_path
+        if dest_path.is_file():
+            log.debug("Found in cache, returning.")
+            return str(dest_path)
         async with self.http.get(f"{self.http_base}/{path}") as resp:
+            log.debug(f"Requested image... size={resp.content_length}")
             if resp.status == 200:
+                i = 0
+                chunk_size = 1024
                 with open(dest_path, 'wb') as fd:
                     while True:
-                        chunk = await resp.content.read(64)
+                        chunk = await resp.content.read(chunk_size)
                         if not chunk:
                             break
                         fd.write(chunk)
-                return dest_path
+                        i += chunk_size
+                        log.debug(f"... ({i}/{resp.content_length})")
+                return str(dest_path)
             elif resp.status == 404:
                 return None
             resp.raise_for_status()
