@@ -12,7 +12,7 @@ from .state import GoblinState
 
 log = logging.getLogger(__name__)
 
-log.setLevel(logging.DEBUG)
+# log.setLevel(logging.DEBUG)
 
 
 class GoblinClient:

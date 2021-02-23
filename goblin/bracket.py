@@ -57,7 +57,7 @@ class Matchup:
         self.victor = victor
 
     @classmethod
-    def from_actor(cls, actor: Actor, fill_from_tstats=True):
+    def from_actor(cls, actor: Actor, fill_from_tstats=False):
         """Generate a Matchup tree given an actor and its ``tstats``."""
 
         def recurse(tstats):
