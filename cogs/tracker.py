@@ -87,7 +87,9 @@ class Tracker(commands.Cog):
         ts.force_topology = True
         ts.show_scale = False
         ts.branch_vertical_margin = 10
-        t.render(f'logs/bracket-final-{int(time.time())}.png', tree_style=ts)
+        fp = f'logs/bracket-final-{int(time.time())}.png'
+        t.render(fp, tree_style=ts)
+        log.info(f"Bracket image saved to {fp}")
 
 
 def setup(bot):
